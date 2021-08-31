@@ -1,6 +1,7 @@
-package org.example.controller;
+package org.example.web;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.model.TodoEntity;
 import org.example.model.TodoRequest;
 import org.example.model.TodoResponse;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @CrossOrigin
 @AllArgsConstructor
 @RestController
@@ -23,6 +25,9 @@ public class TodoController {
 
     @PostMapping
     public ResponseEntity<TodoResponse> create(@RequestBody TodoRequest request) {
+
+        log.info("CREATE");
+
         if (ObjectUtils.isEmpty(request.getTitle()))
             return ResponseEntity.badRequest().build();
 
@@ -38,12 +43,18 @@ public class TodoController {
 
     @GetMapping("{id}")
     public ResponseEntity<TodoResponse> readOne(@PathVariable Long id) {
+
+        log.info("Read One");
+
         TodoEntity result = this.todoService.searchById(id);
         return ResponseEntity.ok(new TodoResponse(result));
     }
 
     @GetMapping()
     public ResponseEntity<List<TodoResponse>> readAll() {
+
+        log.info("Read All");
+
         List<TodoEntity> list = this.todoService.searchAll();
         List<TodoResponse> responses = list.stream().map(TodoResponse::new)
                                                     .collect(Collectors.toList());
@@ -52,18 +63,27 @@ public class TodoController {
 
     @PatchMapping("{id}")
     public ResponseEntity<TodoResponse> update(@PathVariable Long id, @RequestBody TodoRequest request) {
+
+        log.info("Update");
+
         TodoEntity result = this.todoService.updateById(id, request);
         return ResponseEntity.ok(new TodoResponse(result));
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteOne(@PathVariable Long id) {
+
+        log.info("Delete One");
+
         this.todoService.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
     public ResponseEntity<?> deleteAll() {
+
+        log.info("Delete All");
+
         this.todoService.deleteAll();
         return ResponseEntity.ok().build();
     }
