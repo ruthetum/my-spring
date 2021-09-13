@@ -22,3 +22,40 @@
 ### 삭제 (개발자 삭제)
 - DELETE 메소드를 통해 개발자의 정보를 삭제
 - 트랜잭션 활용
+
+## 학습
+### Lombok
+- 반복적으로 타이핑해야되는 boilerplate 코드들을 간편하게 생성해주는 라이브러리
+- `compileOnly 'org.projectlombok:lombok'`
+  
+- Annotation
+  - @Setter, @Getter
+  - @NoArgsConstructor, @AllArgsConstructor, @RequiredArgsConstructor
+  - @Data
+    - Getter, Setter, RequiredArgsConstructor, ToString, EqualsAndHashCode, Value 포함
+  - @ToString
+    - 필요한 상황에서만 사용, 개인정보를 담는 경우 에러 메시지에 개인 정보가 담길 수도 있음
+  - @Builder
+    - 각각 set해줄 필요없이 atomic하게 생성 가능
+    - Ex.
+      ```java
+        PersonDto personDto = PersonDto.builder()
+                                .name("dong")
+                                .age(25)
+                                .createdAt(LocalDateTime.now())
+                                .build();
+      ```
+  - @Slf4j
+    - 로그 생성
+  - @UtilityClass
+    - 시간 변환이나 간단한 처리에 이용되는 static 메소드들을 담는 용, 
+    - Ex.
+      ```java
+        @UtilityClass
+        public class DevUtils {
+           public static void printNow() {
+                System.out.print(LocalDateTime.now());
+           }
+        }
+      ```
+  
