@@ -58,4 +58,42 @@
            }
         }
       ```
+### HTTP
+ - Hypertext를 전송하는데 활용하는 프로토콜
+
+#### HTTP Request 메시지 스펙
+- 첫 줄: 요청라인 - HTTP 메소드(GET, POST 등)
+- 두 번째줄부터 줄바꿈 나오기 전까지: Header(User-Agent, Accept 등)
+- 헤더에서 줄바꿈 이후: Request Body
+    ```java
+      POST /movie HTTP/1.1
+      Content-Type: application/json
+      Accept: application/json
+   
+      {
+        "movieLevel": "ALL",
+        "category": "action",
+        "title": "Spider Man",
+        "releasedAt": "2019"
+      }
+    ```
+
+#### HTTP Response 메시지 스펙
+- 첫 줄: 상태라인 (200, 404, 500 등)
+- 두 번째줄부터 줄바꿈 나오기 전까지: Header
+- 헤더에서 줄바꿈 이후: Request Body
+  ```java
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Transfer-Encoding: chunked
+    Date: Sat, 11, Sep 2021 13:00:00 GMT
+    Keep-Alive: timeout=60
+    Connection: keep-alive
   
+    {
+      "movieLevel": "ALL",
+      "category": "action",
+      "title": "Spider Man",
+      "releasedAt": "2019"
+    }
+  ```
