@@ -97,3 +97,72 @@
       "releasedAt": "2019"
     }
   ```
+  
+### Transaction
+#### ACID
+  - Atomic
+  - Consistency
+  - Isolation
+  - Durability
+  
+### AOP (Aspect Oriented Programming)
+- 어떤 로직을 기준으로 핵심적인 관점, 부가적인 관점으로 나누어서 보고 그 관점을 기준으로 각각 모듈화
+
+```java
+private final EntityManager em;
+
+public void createDeveloper() {
+    EntityTransaction transaction = em.getTransaction(); 
+    try {
+        transaction.begin();
+        
+        // Business Logic Start
+        
+        Developer developer = Developer.builder()
+                .developerLevel(DeveloperLevel.JUNIOR)
+                .developerSkillType(DeveloperSkillType.BACK_END)
+                .experienceYears(2)
+                .name("Olaf")
+                .age(28)
+                .build();
+
+        /* A -> B 1만원 송금 */
+        // A 계좌에서 1만원 줄임
+        developerRepository.save(developer);
+        // B 계좌에서 1만원 늘림
+        developerRepository.delete(developer);
+        
+        // Business Logic End
+        
+        transaction.commit();
+    } catch (Exception e) {
+        transaction.rollback();
+        throw e;
+    }
+}
+```
+
+- Business logic 을 제외한 코드는 공통적으로 활용되는 `transaction` 코드
+- AOP 기반으로 코드를 작성하면 비즈니스 로직만 강조할 수 있음 - `@Transactional`
+```java
+@Transactional
+public void createDeveloper() {
+    // Business Logic Start
+    
+    Developer developer = Developer.builder()
+            .developerLevel(DeveloperLevel.JUNIOR)
+            .developerSkillType(DeveloperSkillType.BACK_END)
+            .experienceYears(2)
+            .name("Olaf")
+            .age(28)
+            .build();
+    
+    /* A -> B 1만원 송금 */
+    // A 계좌에서 1만원 줄임
+    developerRepository.save(developer);
+    // B 계좌에서 1만원 늘림
+    developerRepository.delete(developer);
+    
+    // Business Logic End
+}
+```
