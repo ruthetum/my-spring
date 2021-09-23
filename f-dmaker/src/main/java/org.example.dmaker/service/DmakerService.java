@@ -1,6 +1,7 @@
 package org.example.dmaker.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.dmaker.dto.CreateDeveloperDto;
 import org.example.dmaker.entity.Developer;
 import org.example.dmaker.repository.DeveloperRepository;
 import org.example.dmaker.type.DeveloperLevel;
@@ -15,7 +16,7 @@ public class DmakerService {
     private final DeveloperRepository developerRepository;
 
     @Transactional
-    public void createDeveloper() {
+    public void createDeveloper( CreateDeveloperDto.Request request) {
         Developer developer = Developer.builder()
                 .developerLevel(DeveloperLevel.JUNIOR)
                 .developerSkillType(DeveloperSkillType.BACK_END)

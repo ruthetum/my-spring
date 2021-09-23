@@ -2,9 +2,11 @@ package org.example.dmaker.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dmaker.dto.CreateDeveloperDto;
 import org.example.dmaker.service.DmakerService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
@@ -25,10 +27,12 @@ public class DmakerController {
     }
 
     @PostMapping("/developers")
-    public List<String> createDeveloper() {
-        log.info("POST /developers HTTP/1.1");
+    public List<String> createDeveloper(
+            @RequestBody CreateDeveloperDto.Request request
+            ) {
+        log.info("POST /developers HTTP/1.1 - request : " + request);
 
-        dmakerService.createDeveloper();
+        dmakerService.createDeveloper(request);
 
         return Collections.singletonList("Olaf");
     }
