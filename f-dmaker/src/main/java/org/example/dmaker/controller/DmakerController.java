@@ -10,8 +10,6 @@ import org.example.dmaker.service.DmakerService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -24,7 +22,7 @@ public class DmakerController {
     public List<DeveloperDto> getAllDevelopers() {
         log.info("GET /developers HTTP/1.1");
 
-        return dmakerService.getAllDevelopers();
+        return dmakerService.getAllEmployedDevelopers();
     }
 
     @GetMapping("/developers/{memberId}")
@@ -53,5 +51,14 @@ public class DmakerController {
         log.info("PUT /developers/"+memberId+" HTTP/1.1");
 
         return dmakerService.editDeveloper(memberId, request);
+    }
+
+    @DeleteMapping("/developers/{memberId}")
+    public DeveloperDetailDto deleteDeveloper(
+            @PathVariable String memberId
+    ) {
+        log.info("DELETE /developers/"+memberId+" HTTP/1.1");
+
+        return dmakerService.deleteDeveloper(memberId);
     }
 }

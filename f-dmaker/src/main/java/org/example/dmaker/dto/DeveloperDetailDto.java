@@ -4,6 +4,7 @@ import lombok.*;
 import org.example.dmaker.entity.Developer;
 import org.example.dmaker.type.DeveloperLevel;
 import org.example.dmaker.type.DeveloperSkillType;
+import org.example.dmaker.type.StatusCode;
 
 @Getter
 @Setter
@@ -15,6 +16,7 @@ public class DeveloperDetailDto {
     private DeveloperSkillType developerSkillType;
     private Integer experienceYears;
     private String memberId;
+    private StatusCode statusCode;
     private String name;
     private Integer age;
 
@@ -24,6 +26,7 @@ public class DeveloperDetailDto {
                 .developerSkillType(developer.getDeveloperSkillType())
                 .experienceYears(developer.getExperienceYears())
                 .memberId(developer.getMemberId())
+                .statusCode(developer.getStatusCode())
                 .name(developer.getName())
                 .age(developer.getAge())
                 .build();

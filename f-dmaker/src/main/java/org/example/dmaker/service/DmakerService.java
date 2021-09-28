@@ -6,11 +6,14 @@ import org.example.dmaker.dto.DeveloperDetailDto;
 import org.example.dmaker.dto.DeveloperDto;
 import org.example.dmaker.dto.EditDeveloperDto;
 import org.example.dmaker.entity.Developer;
+import org.example.dmaker.entity.RetiredDeveloper;
 import org.example.dmaker.exception.DmakerErrorCode;
 import org.example.dmaker.exception.DmakerException;
 import org.example.dmaker.repository.DeveloperRepository;
+import org.example.dmaker.repository.RetiredDeveloperRepository;
 import org.example.dmaker.type.DeveloperLevel;
 import org.example.dmaker.type.DeveloperSkillType;
+import org.example.dmaker.type.StatusCode;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -25,6 +28,7 @@ import static org.example.dmaker.exception.DmakerErrorCode.*;
 @RequiredArgsConstructor
 public class DmakerService {
     private final DeveloperRepository developerRepository;
+    private final RetiredDeveloperRepository retiredDeveloperRepository;
 
     @Transactional
     public CreateDeveloperDto.Response createDeveloper(CreateDeveloperDto.Request request) {
@@ -38,6 +42,7 @@ public class DmakerService {
                 .memberId(request.getMemberId())
                 .name(request.getName())
                 .age(request.getAge())
+                .statusCode(StatusCode.EMPLOYED)
                 .build();
         developerRepository.save(developer);
         return CreateDeveloperDto.Response.fromEntity(developer);
@@ -55,8 +60,8 @@ public class DmakerService {
                 }));
     }
 
-    public List<DeveloperDto> getAllDevelopers() {
-        return developerRepository.findAll()
+    public List<DeveloperDto> getAllEmployedDevelopers() {
+        return developerRepository.findDeveloperByStatusCodeEquals(StatusCode.EMPLOYED)
                 .stream().map(DeveloperDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -103,5 +108,21 @@ public class DmakerService {
         if (developerLevel == DeveloperLevel.JUNIOR && experienceYears > 4) {
             throw new DmakerException(LEVEL_EXPERIENCE_YEARS_NOT_MATCHED);
         }
+    }
+
+    @Transactional
+    public DeveloperDetailDto deleteDeveloper(String memberId) {
+        // 1. EMPLOYED -> RETIRED
+        Developer developer = developerRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new DmakerException(NO_DEVELOPER));
+        developer.setStatusCode(StatusCode.RETIRED);
+
+        // 2. save into RetiredDeveloper
+        RetiredDeveloper retiredDeveloper = RetiredDeveloper.builder()
+                .memberId(memberId)
+                .name(developer.getName())
+                .build();
+        retiredDeveloperRepository.save(retiredDeveloper);
+        return DeveloperDetailDto.fromEntity(developer);
     }
 }
