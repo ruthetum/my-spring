@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.dmaker.dto.CreateDeveloperDto;
 import org.example.dmaker.dto.DeveloperDetailDto;
 import org.example.dmaker.dto.DeveloperDto;
+import org.example.dmaker.dto.EditDeveloperDto;
 import org.example.dmaker.service.DmakerService;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,7 @@ public class DmakerController {
     public DeveloperDetailDto getDeveloperDetail(
             @PathVariable String memberId
     ) {
-        log.info("GET /developers"+memberId+" HTTP/1.1");
+        log.info("GET /developers/"+memberId+" HTTP/1.1");
 
         return dmakerService.getDeveloperDetail(memberId);
     }
@@ -42,5 +43,15 @@ public class DmakerController {
         log.info("POST /developers HTTP/1.1 - request : " + request);
 
         return dmakerService.createDeveloper(request);
+    }
+
+    @PutMapping("/developers/{memberId}")
+    public DeveloperDetailDto editDeveloperDetail(
+            @PathVariable String memberId,
+            @Valid @RequestBody EditDeveloperDto.Request request
+    ) {
+        log.info("PUT /developers/"+memberId+" HTTP/1.1");
+
+        return dmakerService.editDeveloper(memberId, request);
     }
 }
