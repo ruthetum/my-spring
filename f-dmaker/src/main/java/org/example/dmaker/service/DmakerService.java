@@ -2,6 +2,8 @@ package org.example.dmaker.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.dmaker.dto.CreateDeveloperDto;
+import org.example.dmaker.dto.DeveloperDetailDto;
+import org.example.dmaker.dto.DeveloperDto;
 import org.example.dmaker.entity.Developer;
 import org.example.dmaker.exception.DmakerErrorCode;
 import org.example.dmaker.exception.DmakerException;
@@ -12,10 +14,11 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static org.example.dmaker.exception.DmakerErrorCode.DUPLICATED_MEMBER_ID;
-import static org.example.dmaker.exception.DmakerErrorCode.LEVEL_EXPERIENCE_YEARS_NOT_MATCHED;
+import static org.example.dmaker.exception.DmakerErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +26,7 @@ public class DmakerService {
     private final DeveloperRepository developerRepository;
 
     @Transactional
-    public CreateDeveloperDto.Response createDeveloper( CreateDeveloperDto.Request request) {
+    public CreateDeveloperDto.Response createDeveloper(CreateDeveloperDto.Request request) {
         validateCreateDeveloper(request);
 
         // business logic
@@ -61,5 +64,17 @@ public class DmakerService {
                 .ifPresent((developer -> {
                     throw new DmakerException(DUPLICATED_MEMBER_ID);
                 }));
+    }
+
+    public List<DeveloperDto> getAllDevelopers() {
+        return developerRepository.findAll()
+                .stream().map(DeveloperDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public DeveloperDetailDto getDeveloperDetail(String memberId) {
+        return developerRepository.findByMemberId(memberId)
+                .map(DeveloperDetailDto::fromEntity)
+                .orElseThrow(() -> new DmakerException(NO_DEVELOPER));
     }
 }
