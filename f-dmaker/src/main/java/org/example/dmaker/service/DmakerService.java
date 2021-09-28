@@ -23,19 +23,20 @@ public class DmakerService {
     private final DeveloperRepository developerRepository;
 
     @Transactional
-    public void createDeveloper( CreateDeveloperDto.Request request) {
+    public CreateDeveloperDto.Response createDeveloper( CreateDeveloperDto.Request request) {
         validateCreateDeveloper(request);
 
         // business logic
         Developer developer = Developer.builder()
-                .developerLevel(DeveloperLevel.JUNIOR)
-                .developerSkillType(DeveloperSkillType.BACK_END)
-                .experienceYears(2)
-                .name("Olaf")
-                .age(28)
+                .developerLevel(request.getDeveloperLevel())
+                .developerSkillType(request.getDeveloperSkillType())
+                .experienceYears(request.getExperienceYears())
+                .memberId(request.getMemberId())
+                .name(request.getName())
+                .age(request.getAge())
                 .build();
-
         developerRepository.save(developer);
+        return CreateDeveloperDto.Response.fromEntity(developer);
     }
 
     private void validateCreateDeveloper(CreateDeveloperDto.Request request) {
