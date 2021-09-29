@@ -166,3 +166,269 @@ public void createDeveloper() {
     // Business Logic End
 }
 ```
+
+### Entity, DTO
+- Entity는 테이블에 정의한 내용
+- DTO는 단어 그대로 transfer하기 위해 사용하는 객체
+- 되도록이면 전송 또는 반환할 때 entity를 그대로 사용하지 말자 
+    - reference. DTO 내에 `fromEntity`와 같은 정적 메소드 정의해서 사용
+
+#### Entity
+```java
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+public class Developer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
+
+    @Enumerated(EnumType.STRING)
+    private DeveloperLevel developerLevel;
+
+    @Enumerated(EnumType.STRING)
+    private DeveloperSkillType developerSkillType;
+
+    private Integer experienceYears;
+    private String memberId;
+    private String name;
+    private Integer age;
+
+    @Enumerated(EnumType.STRING)
+    private StatusCode statusCode;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+}
+```
+- `@EntityListeners(AuditingEntityListener.class)`
+  - 이거 안 붙이면 `@CreatedDate`, `@LastModifiedDate` 작동 안 함
+- `@Enumerated(EnumType.STRING)`
+  - @Enumerated와 enum class를 활용
+  - type 패키지를 생성해서 관련 설정 클래스를 패키징 가능
+  
+  ```java
+  package org.example.dmaker.type;
+  
+  import lombok.AllArgsConstructor;
+  import lombok.Getter;
+  
+  @AllArgsConstructor
+  @Getter
+  public enum DeveloperSkillType {
+  
+      BACK_END("백엔드 개발자"),
+      FRONT_END("프론트엔드 개발자"),
+      FULL_STACK("풀스택 개발자")
+      ;
+  
+      private final String description;
+  }
+  ```
+
+#### DTO
+```java
+public class CreateDeveloperDto {
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class Request {
+        @NotNull
+        private DeveloperLevel developerLevel;
+        @NotNull
+        private DeveloperSkillType developerSkillType;
+        @NotNull
+        @Min(0)
+        @Max(20)
+        private Integer experienceYears;
+
+        @NotNull
+        @Size(min = 3, max = 50, message = "memberId min 3 max 50")
+        private String memberId;
+        @NotNull
+        @Size(min = 3, max = 20, message = "name min 3 max 20")
+        private String name;
+        @Min(18)
+        private Integer age;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class Response {
+        private DeveloperLevel developerLevel;
+        private DeveloperSkillType developerSkillType;
+        private Integer experienceYears;
+        private String memberId;
+
+        public static Response fromEntity(Developer developer) {
+            return Response.builder()
+                    .developerLevel(developer.getDeveloperLevel())
+                    .developerSkillType(developer.getDeveloperSkillType())
+                    .experienceYears(developer.getExperienceYears())
+                    .memberId(developer.getMemberId())
+                    .build();
+        }
+    }
+}
+```
+- 보통 request와 response용이 필요하니 내부에 정적 클래스를 만들어서 request와 response를 활용하자
+- `@NotNull`, `@Min()`, `@Max()`, `@Size()`와 같은 어노테이션으로 최소한의 data validation을 하자
+- `fromEntity` 메소드를 활용해서 서비스 파일에서 entity 정보를 그대로 반환 또는 전송하지 말고 정제된 데이터를 반환하자
+  - entity를 그대로 반환하게 되면 아래 문제가 발생할 수 있음
+     - entity 내에 포함된 민감정보를 출력할 수도 있음
+     - 잘못된 코드로 인해 entity data가 변경될 수도 있음
+  - 따라서 `fromEntity`와 같은 메소드를 통해 다시 빌드해서 리턴하자
+  
+### Validation
+#### Exception
+```java
+@Getter
+public class DmakerException extends RuntimeException {
+    private DmakerErrorCode dmakerErrorCode;
+    private String detailMessage;
+
+    public DmakerException(DmakerErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.dmakerErrorCode = errorCode;
+        this.detailMessage = errorCode.getMessage();
+    }
+
+    public DmakerException(DmakerErrorCode errorCode, String detailMessage) {
+        super(errorCode.getMessage());
+        this.dmakerErrorCode = errorCode;
+        this.detailMessage = detailMessage;
+    }
+}
+```
+```java
+@AllArgsConstructor
+@Getter
+public enum DmakerErrorCode {
+    NO_DEVELOPER("해당되는 개발자가 없습니다."),
+    DUPLICATED_MEMBER_ID("MemberId가 중복되는 개발자가 있습니다."),
+    LEVEL_EXPERIENCE_YEARS_NOT_MATCHED("개발자 레벨과 연차가 맞지 않습니다."),
+
+    INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
+    INVALID_REQUEST("잘못된 요청입니다.");
+
+
+    private final String message;
+}
+```
+- 작업을 하다보면 여러 가지 상황에 대한 exception 처리를 해줘야 함
+- 단순하게 `RuntimeException`을 활용할 수도 있지만 서비스에 따라 다양한 exception이 발생할 수 있기 때문에 별도의 클래스를 만들어 커스터마이징해서 사용하자
+
+#### 생성 기능 중 validation 작업
+```java
+@Service
+@RequiredArgsConstructor
+public class DmakerService {
+  private final DeveloperRepository developerRepository;
+  
+  @Transactional
+  public CreateDeveloperDto.Response createDeveloper(CreateDeveloperDto.Request request) {
+    validateCreateDeveloperRequest(request);
+
+    // business logic
+    Developer developer = Developer.builder()
+            .developerLevel(request.getDeveloperLevel())
+            .developerSkillType(request.getDeveloperSkillType())
+            .experienceYears(request.getExperienceYears())
+            .memberId(request.getMemberId())
+            .name(request.getName())
+            .age(request.getAge())
+            .statusCode(StatusCode.EMPLOYED)
+            .build();
+    developerRepository.save(developer);
+    return CreateDeveloperDto.Response.fromEntity(developer);
+  }
+
+  private void validateCreateDeveloperRequest(CreateDeveloperDto.Request request) {
+    validateDeveloperLevel(
+            request.getDeveloperLevel(),
+            request.getExperienceYears()
+    );
+
+    developerRepository.findByMemberId(request.getMemberId())
+            .ifPresent((developer -> {
+              throw new DmakerException(DUPLICATED_MEMBER_ID);
+            }));
+  }
+  
+  
+    
+    ...
+}
+```
+- `@Transactional` : 데이터 관련 작업할 때는 디폴트하게 사용하자
+  - atomic하게 작업을 할 수 있고, 데이터 수정할 때에도 별도의 save 없이 수정하면 저장되니까
+- `ifPresent()` : Optional 객체를 리턴받을 때 try ~ catch 혹은 if null로 처리하지 말고 `ifPresent`를 활용해서 예외 처리
+
+#### 조회 기능
+```java
+@Service
+@RequiredArgsConstructor
+public class DmakerService {
+  private final DeveloperRepository developerRepository;
+
+  public List<DeveloperDto> getAllEmployedDevelopers() {
+    return developerRepository.findDeveloperByStatusCodeEquals(StatusCode.EMPLOYED)
+            .stream().map(DeveloperDto::fromEntity)
+            .collect(Collectors.toList());
+  }
+
+  public DeveloperDetailDto getDeveloperDetail(String memberId) {
+    return developerRepository.findByMemberId(memberId)
+            .map(DeveloperDetailDto::fromEntity)
+            .orElseThrow(() -> new DmakerException(NO_DEVELOPER));
+  }
+  
+  ...
+}
+```
+- stream을 map()을 통해 mapping
+  - stream 작업 이후에는 collect 잊지 말기
+- `orElseThrow()`를 통해 깔끔하게 예외처리하자
+
+#### @ExceptionHandler
+```java
+public class DmakerController {
+    
+    ...
+
+  @ResponseStatus(value = HttpStatus.CONFLICT)
+  @ExceptionHandler(DmakerException.class)
+  public DmakerErrorResponse handleException(
+          DmakerException e,
+          HttpServletRequest request
+  ) {
+    log.error("errorCode : {}, url : {}, message : {}",
+            e.getDmakerErrorCode(), request.getRequestURI(), e.getDetailMessage());
+
+    return DmakerErrorResponse.builder()
+            .errorCode((e.getDmakerErrorCode()))
+            .errorMessage(e.getDetailMessage())
+            .build();
+  }
+  
+  ...
+  
+}
+```
+- `@ExceptionHandler`를 통해 원하는 형태의 error response를 만들 수 있음.
+- `@ResponseStatus`를 활용해서 HTTP status 값을 설정할 수 있음
+- `HttpServletRequest`를 활용해서 구체적인 요청을 확인할 수 있음
