@@ -432,3 +432,63 @@ public class DmakerController {
 - `@ExceptionHandler`를 통해 원하는 형태의 error response를 만들 수 있음.
 - `@ResponseStatus`를 활용해서 HTTP status 값을 설정할 수 있음
 - `HttpServletRequest`를 활용해서 구체적인 요청을 확인할 수 있음
+
+#### @RestControllerAdvice
+- 컨트롤러 별로 `@ExceptionHandler`을 만들면 컨트롤러의 수만큼 handler를 생성해줘야 함
+- 따라서 exception handling을 위한 별도의 클래스를 만들어서 글로벌 예외처리를 할 수 있음
+```java
+package org.example.dmaker.exception; 
+
+@Slf4j
+@RestControllerAdvice
+public class DmakerExceptionHandler {
+
+    @ExceptionHandler(DmakerException.class)
+    public DmakerErrorResponse handleException(
+            DmakerException e,
+            HttpServletRequest request
+    ) {
+        log.error("errorCode : {}, url : {}, message : {}",
+                e.getDmakerErrorCode(), request.getRequestURI(), e.getDetailMessage());
+
+        return DmakerErrorResponse.builder()
+                .errorCode((e.getDmakerErrorCode()))
+                .errorMessage(e.getDetailMessage())
+                .build();
+    }
+
+    @ExceptionHandler(value = {
+            HttpRequestMethodNotSupportedException.class,
+            MethodArgumentNotValidException.class
+    })
+    public DmakerErrorResponse handleBadRequest(
+            Exception e,
+            HttpServletRequest request
+    ) {
+      log.error("url : {}, message : {}",
+              request.getRequestURI(), e.getMessage());
+  
+      return DmakerErrorResponse.builder()
+              .errorCode(INVALID_REQUEST)
+              .errorMessage(INVALID_REQUEST.getMessage())
+              .build();
+    }
+
+    @ExceptionHandler(Exception.class)
+    public DmakerErrorResponse handleException(
+            Exception e, HttpServletRequest request
+    ) {
+      log.error("url : {}, message : {}",
+              request.getRequestURI(), e.getMessage());
+  
+      return DmakerErrorResponse.builder()
+              .errorCode(INTERNAL_SERVER_ERROR)
+              .errorMessage(INTERNAL_SERVER_ERROR.getMessage())
+              .build();
+    }
+}
+```
+- 요청 자체가 잘못돼서 커스터마이징한 exception에 걸리지 않는 경우도 대비
+  - `HttpRequestMethodNotSupportedException` : HTTP Method가 올바르지 않은 경우
+  - `MethodArgumentNotValidException` : 설정한 Argument가 올바르지 요청되지 않은 경우
+- `@ExceptionHandler(Exception.class)` : exception의 종류를 대비할 수 없는 경우
