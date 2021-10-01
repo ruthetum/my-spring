@@ -492,3 +492,5 @@ public class DmakerExceptionHandler {
   - `HttpRequestMethodNotSupportedException` : HTTP Method가 올바르지 않은 경우
   - `MethodArgumentNotValidException` : 설정한 Argument가 올바르지 요청되지 않은 경우
 - `@ExceptionHandler(Exception.class)` : exception의 종류를 대비할 수 없는 경우
+
+### JUnit & Mockito
