@@ -494,3 +494,9 @@ public class DmakerExceptionHandler {
 - `@ExceptionHandler(Exception.class)` : exception의 종류를 대비할 수 없는 경우
 
 ### JUnit & Mockito
+- Mockito는 개발자가 동작을 직접 제어할 수 있는 가짜(Mock) 객체를 지원하는 테스트 프레임워크
+  - `@Mock` : Mock 객체를 만들어 반환해주는 어노테이션 
+  - `@InjectMocks` : @Mock 또는 @Spy로 생성된 가짜 객체를 자동으로 주입시켜주는 어노테이션
+- Mockito도 테스팅 프레임워크이기 때문에 JUnit과 결합되기 위해서는 별도의 작업이 필요하다.
+- 기존의 JUnit4에서 Mockito를 활용하기 위해서는 클래스 어노테이션으로 @RunWith(MockitoJUnitRunner.class)를 붙여주어야 연동이 가능
+- SpringBoot 2.2.0부터 공식적으로 JUnit5를 지원함에 따라 @ExtendWith(MockitoExtension.class)를 사용해야 결합이 가능
