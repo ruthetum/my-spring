@@ -2,7 +2,6 @@ package org.example.dmaker.controller;
 
 import org.example.dmaker.dto.DeveloperDto;
 import org.example.dmaker.service.DmakerService;
-import org.example.dmaker.type.DeveloperSkillType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,7 +17,6 @@ import static org.example.dmaker.type.DeveloperLevel.SENIOR;
 import static org.example.dmaker.type.DeveloperSkillType.BACK_END;
 import static org.example.dmaker.type.DeveloperSkillType.FRONT_END;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;

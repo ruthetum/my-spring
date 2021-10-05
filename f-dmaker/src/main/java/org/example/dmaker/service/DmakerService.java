@@ -1,5 +1,6 @@
 package org.example.dmaker.service;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.example.dmaker.dto.CreateDeveloperDto;
 import org.example.dmaker.dto.DeveloperDetailDto;
@@ -7,19 +8,16 @@ import org.example.dmaker.dto.DeveloperDto;
 import org.example.dmaker.dto.EditDeveloperDto;
 import org.example.dmaker.entity.Developer;
 import org.example.dmaker.entity.RetiredDeveloper;
-import org.example.dmaker.exception.DmakerErrorCode;
 import org.example.dmaker.exception.DmakerException;
 import org.example.dmaker.repository.DeveloperRepository;
 import org.example.dmaker.repository.RetiredDeveloperRepository;
 import org.example.dmaker.type.DeveloperLevel;
-import org.example.dmaker.type.DeveloperSkillType;
 import org.example.dmaker.type.StatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.example.dmaker.exception.DmakerErrorCode.*;
@@ -48,7 +46,7 @@ public class DmakerService {
         return CreateDeveloperDto.Response.fromEntity(developer);
     }
 
-    private void validateCreateDeveloperRequest(CreateDeveloperDto.Request request) {
+    private void validateCreateDeveloperRequest(@NonNull CreateDeveloperDto.Request request) {
         validateDeveloperLevel(
                 request.getDeveloperLevel(),
                 request.getExperienceYears()
@@ -60,12 +58,14 @@ public class DmakerService {
                 }));
     }
 
+    @Transactional(readOnly = true)
     public List<DeveloperDto> getAllEmployedDevelopers() {
         return developerRepository.findDeveloperByStatusCodeEquals(StatusCode.EMPLOYED)
                 .stream().map(DeveloperDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public DeveloperDetailDto getDeveloperDetail(String memberId) {
         return developerRepository.findByMemberId(memberId)
                 .map(DeveloperDetailDto::fromEntity)
@@ -74,24 +74,18 @@ public class DmakerService {
 
     @Transactional
     public DeveloperDetailDto editDeveloper(String memberId, EditDeveloperDto.Request request) {
-        validateEditDeveloperRequest(request, memberId);
-
-        Developer developer = developerRepository.findByMemberId(memberId).orElseThrow(
-                () -> new DmakerException(NO_DEVELOPER)
+        validateDeveloperLevel(
+                request.getDeveloperLevel(), request.getExperienceYears()
         );
+
+        Developer developer = developerRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new DmakerException(NO_DEVELOPER));
 
         developer.setDeveloperLevel(request.getDeveloperLevel());
         developer.setDeveloperSkillType(request.getDeveloperSkillType());
         developer.setExperienceYears(request.getExperienceYears());
 
         return DeveloperDetailDto.fromEntity(developer);
-    }
-
-    private void validateEditDeveloperRequest(EditDeveloperDto.Request request, String memberId) {
-        validateDeveloperLevel(
-                request.getDeveloperLevel(),
-                request.getExperienceYears()
-        );
     }
 
     private void validateDeveloperLevel(DeveloperLevel developerLevel, Integer experienceYears) {
