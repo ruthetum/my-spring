@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import static com.example.security.exception.UserErrorCode.DUPLICATED_USER;
 import static com.example.security.type.Authority.ROLE_ADMIN;
+import static com.example.security.type.Authority.ROLE_USER;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class UserService {
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
-                .authority(ROLE_ADMIN)
+                .authority(ROLE_USER)
                 .build();
 
         return userRepository.save(user);
