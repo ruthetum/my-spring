@@ -1,2 +1,38 @@
-GET {{host}}/
+# 1. Member 단일 조회
+GET {{host}}/api/members/3
 Content-Type: application/json
+
+###
+
+# 2. Member 페이징 조회
+GET {{host}}/api/members?page=0&size=2
+Content-Type: application/json
+
+###
+
+# 3. Member 생성
+POST {{host}}/api/members
+Content-Type: application/json
+
+{
+   "name": "name5",
+   "email": "member5@naver.com"
+}
+
+###
+
+# 4. Member 수정
+PATCH {{host}}/api/members/3
+Content-Type: application/json
+
+{
+  "name": "3name"
+}
+
+###
+
+# 5. Member 삭제
+DELETE {{host}}/api/members/2
+Content-Type: application/json
+
+###

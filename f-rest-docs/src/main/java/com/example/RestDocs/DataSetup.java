@@ -1,4 +1,4 @@
-package com.example.RestDocs.config;
+package com.example.RestDocs;
 
 import com.example.RestDocs.member.domain.Member;
 import com.example.RestDocs.member.repository.MemberRepository;

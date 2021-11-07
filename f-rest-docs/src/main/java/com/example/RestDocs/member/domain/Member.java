@@ -23,17 +23,18 @@ public class Member {
     @Column(nullable = false)
     private String name;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
     @Column(nullable = false)
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     public Member(final String email, final String name) {
         this.email = email;
         this.name = name;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void setName(final String name) {
