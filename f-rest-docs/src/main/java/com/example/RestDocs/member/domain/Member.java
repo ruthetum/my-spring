@@ -31,8 +31,12 @@ public class Member {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public Member(String email, String name) {
+    public Member(final String email, final String name) {
         this.email = email;
+        this.name = name;
+    }
+
+    public void setName(final String name) {
         this.name = name;
     }
 }
