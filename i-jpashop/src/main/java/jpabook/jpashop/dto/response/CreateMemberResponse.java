@@ -1,4 +1,4 @@
-package jpabook.jpashop.dto;
+package jpabook.jpashop.dto.response;
 
 public class CreateMemberResponse {
     private Long id;
