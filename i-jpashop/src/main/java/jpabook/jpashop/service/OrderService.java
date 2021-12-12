@@ -95,4 +95,12 @@ public class OrderService {
                 .collect(Collectors.toList());
         return result;
     }
+
+    public List<OrderDto> ordersV3_page(int offset, int limit) {
+        List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
+        List<OrderDto> result = orders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(Collectors.toList());
+        return result;
+    }
 }

@@ -10,8 +10,9 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
+        default_batch_fetch_size: 1000
         # show_sql: true
-        format_sql: true
+        format_sql: true;
 
 #  datasource:
 #    driver-class-name: com.mysql.cj.jdbc.Driver
