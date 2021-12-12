@@ -24,4 +24,9 @@ public class OrderApiController {
     public List<OrderDto> ordersV2() {
         return orderService.ordersV2();
     }
+
+    @GetMapping("/api/v3/simple/orders")
+    public List<OrderDto> ordersV3() {
+        return orderService.ordersV3();
+    }
 }
