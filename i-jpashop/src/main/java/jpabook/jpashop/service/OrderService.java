@@ -5,11 +5,9 @@ import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderItem;
 import jpabook.jpashop.domain.item.Item;
-import jpabook.jpashop.dto.response.OrderDto;
-import jpabook.jpashop.repository.ItemRepository;
-import jpabook.jpashop.repository.MemberRepository;
-import jpabook.jpashop.repository.OrderRepository;
-import jpabook.jpashop.repository.OrderSearch;
+import jpabook.jpashop.dto.OrderSimpleQueryDto;
+import jpabook.jpashop.dto.response.OrderSimpleDto;
+import jpabook.jpashop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +21,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderSimpleQueryRepository orderSimpleQueryRepository;
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
 
@@ -80,27 +79,31 @@ public class OrderService {
         return all;
     }
 
-    public List<OrderDto> ordersV2() {
+    public List<OrderSimpleDto> ordersV2() {
         List<Order> orders = orderRepository.findAll();
-        List<OrderDto> result = orders.stream()
-                .map(OrderDto::new)
+        List<OrderSimpleDto> result = orders.stream()
+                .map(OrderSimpleDto::new)
                 .collect(Collectors.toList());
         return result;
     }
 
-    public List<OrderDto> ordersV3() {
+    public List<OrderSimpleDto> ordersV3() {
         List<Order> orders = orderRepository.findAllWithItem();
-        List<OrderDto> result = orders.stream()
-                .map(o -> new OrderDto(o))
+        List<OrderSimpleDto> result = orders.stream()
+                .map(o -> new OrderSimpleDto(o))
                 .collect(Collectors.toList());
         return result;
     }
 
-    public List<OrderDto> ordersV3_page(int offset, int limit) {
+    public List<OrderSimpleDto> ordersV3_page(int offset, int limit) {
         List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
-        List<OrderDto> result = orders.stream()
-                .map(o -> new OrderDto(o))
+        List<OrderSimpleDto> result = orders.stream()
+                .map(o -> new OrderSimpleDto(o))
                 .collect(Collectors.toList());
         return result;
+    }
+
+    public List<OrderSimpleQueryDto> ordersV4() {
+        return orderSimpleQueryRepository.findOrderDtos();
     }
 }

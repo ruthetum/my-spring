@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
-public class OrderDto {
+public class OrderSimpleDto {
     private Long orderId;
     private String name;
     private LocalDateTime orderDate;
@@ -21,7 +21,7 @@ public class OrderDto {
     private Address address;
     private List<OrderItemDto> orderItems;
 
-    public OrderDto(Order order) {
+    public OrderSimpleDto(Order order) {
         orderId = order.getId();
         name = order.getMember().getName();
         orderDate = order.getOrderDate();

@@ -1,7 +1,8 @@
 package jpabook.jpashop.api;
 
 import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.dto.response.OrderDto;
+import jpabook.jpashop.dto.OrderSimpleQueryDto;
+import jpabook.jpashop.dto.response.OrderSimpleDto;
 import jpabook.jpashop.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,12 +23,12 @@ public class OrderApiController {
     }
 
     @GetMapping("/api/v2/simple/orders")
-    public List<OrderDto> ordersV2() {
+    public List<OrderSimpleDto> ordersV2() {
         return orderService.ordersV2();
     }
 
     @GetMapping("/api/v3/simple/orders")
-    public List<OrderDto> ordersV3() {
+    public List<OrderSimpleDto> ordersV3() {
         return orderService.ordersV3();
     }
 
@@ -37,10 +38,15 @@ public class OrderApiController {
      * - 컬렉션 관계는 hibernate.default_batch_fetch_size, @BatchSize로 최적화
      */
     @GetMapping("/api/v3.1/simple/orders")
-    public List<OrderDto> ordersV3_page(
+    public List<OrderSimpleDto> ordersV3_page(
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "limit", defaultValue = "100") int limit
     ) {
         return orderService.ordersV3_page(offset, limit);
+    }
+
+    @GetMapping("/api/v4/simple/orders")
+    public List<OrderSimpleQueryDto> ordersV4() {
+        return orderService.ordersV4();
     }
 }
