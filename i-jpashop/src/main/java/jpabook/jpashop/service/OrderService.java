@@ -5,6 +5,7 @@ import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderItem;
 import jpabook.jpashop.domain.item.Item;
+import jpabook.jpashop.dto.response.OrderDto;
 import jpabook.jpashop.repository.ItemRepository;
 import jpabook.jpashop.repository.MemberRepository;
 import jpabook.jpashop.repository.OrderRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -66,7 +68,7 @@ public class OrderService {
      * 검색
      */
     public List<Order> findOrders(OrderSearch orderSearch) {
-        return orderRepository.findAll(orderSearch);
+        return orderRepository.findAllByString(orderSearch);
     }
 
     public List<Order> ordersV1() {
@@ -76,5 +78,13 @@ public class OrderService {
             order.getDelivery().getAddress(); //Lazy 강제 초기화
         }
         return all;
+    }
+
+    public List<OrderDto> ordersV2() {
+        List<Order> orders = orderRepository.findAll();
+        List<OrderDto> result = orders.stream()
+                .map(OrderDto::new)
+                .collect(Collectors.toList());
+        return result;
     }
 }
