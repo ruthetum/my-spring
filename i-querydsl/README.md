@@ -283,3 +283,44 @@ List<Tuple> result = queryFactory
     }
     ```
 
+## Case
+```java
+List<String> result = queryFactory
+    .select(member.age
+            .when(10).then("열살")
+            .when(20).then("스무살")
+            .otherwise("기타"))
+    .from(member)
+    .fetch();
+```
+```java
+NumberExpression<Integer> rankPath = new CaseBuilder()
+        .when(member.age.between(0, 20)).then(2)
+        .when(member.age.between(21, 30)).then(1)
+        .otherwise(3);
+
+List<Tuple> result = queryFactory
+        .select(member.username, member.age, rankPath)
+        .from(member)
+        .orderBy(rankPath.desc())
+        .fetch();
+```
+
+## 상수
+- 상수가 필요하면 `Expressions.constant(xxx)` 사용
+    ```
+    Tuple result = queryFactory
+            .select(member.username, Expressions.constant("A"))
+            .from(member)
+            .fetchFirst()
+    ```
+
+- concat
+    ```java
+    String result = queryFactory
+            .select(member.username.concat("_").concat(member.age.stringValue()))
+            .from(member)
+            .where(member.username.eq("member1"))
+            .fetchOne();
+    ```
+  - `stringValue()` 활용
