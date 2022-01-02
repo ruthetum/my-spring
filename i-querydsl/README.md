@@ -196,3 +196,46 @@ long count = queryFactory
 ## 정렬
 - `desc()` , `asc()` : 일반 정렬
 - `nullsLast()` , `nullsFirst()` : null 데이터 순서 부여
+
+## 집합
+```java
+/**
+ * JPQL
+ * select
+ * COUNT(m), //회원수
+ * SUM(m.age), //나이 합
+ * AVG(m.age), //평균 나이
+ * MAX(m.age), //최대 나이
+ * MIN(m.age) //최소 나이
+ * from Member m
+ */
+@Test
+public void aggregation() throws Exception {
+    List<Tuple> result = queryFactory
+            .select(member.count(),
+                    member.age.sum(),
+                    member.age.avg(),
+                    member.age.max(),
+                    member.age.min())
+            .from(member)
+            .fetch();
+
+    Tuple tuple = result.get(0);
+    Assertions.assertThat(tuple.get(member.count())).isEqualTo(4);
+    Assertions.assertThat(tuple.get(member.age.sum())).isEqualTo(100);
+    Assertions.assertThat(tuple.get(member.age.avg())).isEqualTo(25);
+    Assertions.assertThat(tuple.get(member.age.max())).isEqualTo(40);
+    Assertions.assertThat(tuple.get(member.age.min())).isEqualTo(10);
+}
+```
+
+### Group by
+```java
+List<Tuple> result = queryFactory
+        .select(team.name, member.age.avg())
+        .from(member)
+        .join(member.team, team)
+        .groupBy(team.name)
+        .fetch();
+```
+
