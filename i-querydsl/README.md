@@ -324,3 +324,49 @@ List<Tuple> result = queryFactory
             .fetchOne();
     ```
   - `stringValue()` 활용
+    
+
+## DTO 반환
+1. 프로퍼티(Setter) 접근
+```java
+List<MemberDto> result = queryFactory
+                .select(Projections.bean(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+```
+2. 필드 직접 접근
+```java
+List<MemberDto> result = queryFactory
+        .select(Projections.fields(MemberDto.class,
+        member.username,
+        member.age))
+        .from(member)
+        .fetch();
+```
+3. 생성자 접근
+```java
+List<MemberDto> result = queryFactory
+                .select(Projections.constructor(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+```
+
+- 별칭이 다른 경우
+    - `as` 활용
+    ```java
+    List<UserDto> fetch = queryFactory
+             .select(Projections.fields(UserDto.class,
+                 member.username.as("name"),
+                 ExpressionUtils.as(
+                     JPAExpressions
+                     .select(memberSub.age.max())
+                     .from(memberSub), "age")
+                 )
+            ).from(member)
+            .fetch();
+    ```
+  
