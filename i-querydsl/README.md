@@ -262,3 +262,24 @@ List<Tuple> result = queryFactory
         .join(member.team, team).fetchJoin() // fetch join도 가능
         .fetch();
 ```
+
+## 서브 쿼리
+- `com.querydsl.jpa.JPAExpressions` 사용
+- Q type만 다르게 잘 설정해주자
+    ```java
+    public void subQuery() {
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(
+                        JPAExpressions
+                            .select(memberSub.age.max())
+                            .from(memberSub)
+                ))
+                .fetch();
+
+        Assertions.assertThat(result).extracting("age").containsExactly(40);
+    }
+    ```
+
