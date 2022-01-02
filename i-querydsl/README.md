@@ -67,5 +67,132 @@ test {
 ```
 - compileQuerydsl 오류 관련 해결 : https://www.inflearn.com/questions/355723
 
-## Q 뽑기
+## Q type 뽑기
 - 우측 Gradle - Tasks - other - compileQuerydsl 클릭
+
+## Querydsl vs JPQL
+```java
+public class QuerydslBasicTest {
+
+    @PersistenceContext
+    EntityManager em;
+
+    JPAQueryFactory queryFactory;
+
+    @BeforeEach
+    public void before() {
+
+        queryFactory = new JPAQueryFactory(em);
+        ...
+    }
+
+    @Test
+    public void startJPQL() {
+        String qlString =
+                "select m from Member m " +
+                        "where m.username = :username";
+
+        Member findMember = em.createQuery(qlString, Member.class)
+                .setParameter("username", "member1")
+                .getSingleResult();
+
+        Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    public void startQuerydsl() {
+        QMember m = new QMember("m");
+
+        Member findMember = queryFactory
+                .select(m)
+                .from(m)
+                .where(m.username.eq("member1")) //파라미터 바인딩 처리
+                .fetchOne();
+
+        Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+}
+```
+
+## JPQL 검색 조건
+```
+member.username.eq("member1") // username = 'member1'
+member.username.ne("member1") //username != 'member1'
+member.username.eq("member1").not() // username != 'member1'
+
+member.username.isNotNull() //이름이 is not null
+
+member.age.in(10, 20) // age in (10,20)
+member.age.notIn(10, 20) // age not in (10, 20)
+member.age.between(10,30) //between 10, 30
+
+member.age.goe(30) // age >= 30
+member.age.gt(30) // age > 30
+member.age.loe(30) // age <= 30
+member.age.lt(30) // age < 30
+
+member.username.like("member%") //like 검색
+member.username.contains("member") // like ‘%member%’ 검색
+member.username.startsWith("member") //like ‘member%’ 검색
+```
+
+## 결과 조회
+- `fetch()` : 리스트 조회, 데이터 없으면 빈 리스트 반환
+- `fetchOne()` : 단 건 조회
+    - 결과가 없으면 : null
+    - 결과가 둘 이상이면 : `com.querydsl.core.NonUniqueResultException`
+- `fetchFirst()` : `limit(1).fetchOne()`
+- `fetchResults()` : 페이징 정보 포함, total count 쿼리 추가 실행 / `deprecated`
+- `fetchCount()` : count 쿼리로 변경해서 count 수 조회 / `deprecated`
+
+```java
+// List
+List<Member> fetch = queryFactory
+        .selectFrom(member)
+        .fetch();
+
+//단 건
+Member findMember1 = queryFactory
+        .selectFrom(member)
+        .fetchOne();
+
+//처음 한 건 조회
+Member findMember2 = queryFactory
+        .selectFrom(member)
+        .fetchFirst();
+
+//페이징에서 사용
+QueryResults<Member> results = queryFactory
+        .selectFrom(member)
+        .fetchResults();
+
+//count 쿼리로 변경
+long count = queryFactory
+        .selectFrom(member)
+        .fetchCount();
+```
+
+- `fetchResults()`, `fetchCount()` 는 5.0.0 버전에서 deprecated 됨
+    > fetchResults() : Get the projection in QueryResults form. Make sure to use fetch() instead if you do not rely on the QueryResults.getOffset() or QueryResults.getLimit(), because it will be more performant. Also, count queries cannot be properly generated for all dialects. For example: in JPA count queries can’t be generated for queries that have multiple group by expressions or a having clause. Get the projection in QueryResults form. Use fetch() instead if you do not need the total count of rows in the query result.
+    
+    > fetchCount() : An implementation is allowed to fall back to fetch().size().
+
+- 페이징 처리 방법
+    ```java
+    public Page<User> findUserWithPaging(Pageable pageable) {
+    
+        List<User> content = queryFactory
+                .selectFrom(user)
+                .where(user.username.like("user_"))
+                .offset(pageable.getOffset()) // offset
+                .limit(pageable.getPageSize()) // limit
+                .fetch();
+    
+        return new PageImpl<>(content, pageable, content.size()); // 쿼리 결과로 페이징 객체 리턴
+    }
+    ```
+- cf. https://devwithpug.github.io/java/querydsl-with-datajpa/
+
+## 정렬
+- `desc()` , `asc()` : 일반 정렬
+- `nullsLast()` , `nullsFirst()` : null 데이터 순서 부여
