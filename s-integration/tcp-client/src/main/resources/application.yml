@@ -1,0 +1,5 @@
+tcp:
+  server:
+    host: localhost:9000
+  client:
+    port: 9001
