@@ -8,6 +8,7 @@ import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.ip.tcp.TcpInboundGateway;
 import org.springframework.integration.ip.tcp.connection.AbstractServerConnectionFactory;
 import org.springframework.integration.ip.tcp.connection.TcpNioServerConnectionFactory;
+import org.springframework.integration.ip.tcp.serializer.ByteArrayCrLfSerializer;
 import org.springframework.messaging.MessageChannel;
 
 @Configuration
@@ -18,17 +19,12 @@ public class TcpServerConfig {
     private int port;
 
     @Bean
-    public CustomTcpSerializer serializer() {
-        return new CustomTcpSerializer();
-    }
-
-    @Bean
-    public AbstractServerConnectionFactory connectionFactory(CustomTcpSerializer serializer) {
-        TcpNioServerConnectionFactory connectionFactory = new TcpNioServerConnectionFactory(port);
-        connectionFactory.setSerializer(serializer);
-        connectionFactory.setDeserializer(serializer);
-        connectionFactory.setSingleUse(true);
-        return connectionFactory;
+    public AbstractServerConnectionFactory serverConnectionFactory() {
+        TcpNioServerConnectionFactory tcpNioServerConnectionFactory = new TcpNioServerConnectionFactory(port);
+        tcpNioServerConnectionFactory.setUsingDirectBuffers(true);
+        tcpNioServerConnectionFactory.setSerializer(codec());
+        tcpNioServerConnectionFactory.setDeserializer(codec());
+        return tcpNioServerConnectionFactory;
     }
 
     @Bean
@@ -42,11 +38,17 @@ public class TcpServerConfig {
     }
 
     @Bean
-    public TcpInboundGateway inboundGateway(AbstractServerConnectionFactory connectionFactory, MessageChannel inboundChannel, MessageChannel replyChannel) {
+    public TcpInboundGateway inboundGateway(AbstractServerConnectionFactory serverConnectionFactory, MessageChannel inboundChannel) {
         TcpInboundGateway tcpInboundGateway = new TcpInboundGateway();
-        tcpInboundGateway.setConnectionFactory(connectionFactory);
+        tcpInboundGateway.setConnectionFactory(serverConnectionFactory);
         tcpInboundGateway.setRequestChannel(inboundChannel);
-        tcpInboundGateway.setReplyChannel(replyChannel);
+        tcpInboundGateway.setReplyChannel(replyChannel());
         return tcpInboundGateway;
+    }
+
+    public ByteArrayCrLfSerializer codec() {
+        ByteArrayCrLfSerializer crLfSerializer = new ByteArrayCrLfSerializer();
+        crLfSerializer.setMaxMessageSize(204800000);
+        return crLfSerializer;
     }
 }

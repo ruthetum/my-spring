@@ -5,12 +5,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
-import org.springframework.integration.ip.tcp.TcpInboundGateway;
-import org.springframework.integration.ip.tcp.TcpOutboundGateway;
-import org.springframework.integration.ip.tcp.connection.AbstractClientConnectionFactory;
-import org.springframework.integration.ip.tcp.connection.AbstractServerConnectionFactory;
-import org.springframework.integration.ip.tcp.connection.TcpNioClientConnectionFactory;
-import org.springframework.integration.ip.tcp.connection.TcpNioServerConnectionFactory;
+import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.Transformers;
+import org.springframework.integration.ip.dsl.Tcp;
+import org.springframework.integration.ip.tcp.connection.*;
+import org.springframework.integration.ip.tcp.serializer.ByteArrayCrLfSerializer;
 import org.springframework.messaging.MessageChannel;
 
 @Configuration
@@ -23,35 +23,33 @@ public class TcpClientConfig {
     @Value("${tcp.client.port}")
     private int port;
 
+    @Value("${tcp.client.connection.pool-size}")
+    private int connectionPoolSize;
+
     @Bean
-    public CustomTcpSerializer serializer() {
-        return new CustomTcpSerializer();
+    public AbstractClientConnectionFactory clientConnectionFactory() {
+        TcpNioClientConnectionFactory tcpNioClientConnectionFactory = new TcpNioClientConnectionFactory(host, port);
+        tcpNioClientConnectionFactory.setUsingDirectBuffers(true);
+        tcpNioClientConnectionFactory.setSerializer(codec());
+        tcpNioClientConnectionFactory.setDeserializer(codec());
+        return new CachingClientConnectionFactory(tcpNioClientConnectionFactory, connectionPoolSize);
     }
 
     @Bean
-    public AbstractClientConnectionFactory connectionFactory(CustomTcpSerializer serializer) {
-        TcpNioClientConnectionFactory connectionFactory = new TcpNioClientConnectionFactory(host, port);
-        connectionFactory.setSerializer(serializer);
-        connectionFactory.setDeserializer(serializer);
-        connectionFactory.setSingleUse(true);
-        return connectionFactory;
+    public IntegrationFlow fileWriterFlow() {
+        return IntegrationFlows.from("outboundChannel")
+                .handle(Tcp.outboundGateway(clientConnectionFactory()))
+                .transform(Transformers.objectToString()).get();
     }
 
     @Bean
-    public MessageChannel inboundChannel() {
+    public MessageChannel outboundChannel() {
         return new DirectChannel();
     }
 
-    @Bean
-    public MessageChannel replyChannel() {
-        return new DirectChannel();
-    }
-
-    @Bean
-    public TcpOutboundGateway outboundGateway(AbstractClientConnectionFactory connectionFactory, MessageChannel inboundChannel, MessageChannel replyChannel) {
-        TcpOutboundGateway tcpOutboundGateway = new TcpOutboundGateway();
-        tcpOutboundGateway.setConnectionFactory(connectionFactory);
-        tcpOutboundGateway.setReplyChannel(replyChannel);
-        return tcpOutboundGateway;
+    public ByteArrayCrLfSerializer codec() {
+        ByteArrayCrLfSerializer crLfSerializer = new ByteArrayCrLfSerializer();
+        crLfSerializer.setMaxMessageSize(204800000);
+        return crLfSerializer;
     }
 }

@@ -2,6 +2,8 @@ package com.example.tcpserver.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -9,9 +11,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MessageService {
 
-    private static final byte[] DEFAULT_RESPONSE = new byte[0];
+    private final RedisTemplate redisTemplate;
 
-    public byte[] processMessage(byte[] message) {
+    private static final String DEFAULT_RESPONSE = "Q";
+
+    public String processMessage(String message) {
         log.info("Receive message : {}", message);
         return DEFAULT_RESPONSE;
     }
