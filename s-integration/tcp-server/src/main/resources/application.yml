@@ -1,6 +1,9 @@
+server:
+  port: 9000
+
 tcp:
   server:
-    port: 9000
+    port: 19000
 
 spring:
   redis:

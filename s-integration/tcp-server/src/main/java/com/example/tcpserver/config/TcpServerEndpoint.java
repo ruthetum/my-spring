@@ -12,7 +12,7 @@ public class TcpServerEndpoint {
     private final MessageService messageService;
 
     @ServiceActivator(inputChannel = "inboundChannel", async = "true")
-    public byte[] process(byte[] message) {
+    public String process(String message) {
         return messageService.processMessage(message);
     }
 }

@@ -17,7 +17,7 @@ import org.springframework.messaging.MessageChannel;
 @EnableIntegration
 public class TcpClientConfig {
 
-    @Value("${tcp.server.host")
+    @Value("${tcp.server.host}")
     private String host;
 
     @Value("${tcp.client.port}")

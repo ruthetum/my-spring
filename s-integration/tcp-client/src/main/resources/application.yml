@@ -1,7 +1,10 @@
+server:
+  port: 9001
+
 tcp:
   server:
-    host: localhost:9000
+    host: localhost
   client:
-    port: 9001
+    port: 19000
     connection:
       pool-size: 50

@@ -20,7 +20,6 @@ public class DemoController {
     ) {
         log.info(value);
         tcpClientGateway.send(value);
+        return;
     }
-
-
 }
