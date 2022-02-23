@@ -10,6 +10,7 @@
 - spring integration keyword : https://www.linkedin.com/pulse/spring-boot-spring-integration-baki-hayat
 - spring integration example : https://github.com/spring-projects/spring-integration-samples
     - https://github.com/spring-projects/spring-integration-samples/blob/main/advanced/dynamic-tcp-client/src/main/java/org/springframework/integration/samples/dynamictcp/DynamicTcpClientApplication.java
+- spring integration transaction : https://www.baeldung.com/spring-integration-transaction
 - TCP 서버 만들기
     - server : https://gogo-jjm.tistory.com/57
     - client : https://gogo-jjm.tistory.com/58?category=854015
