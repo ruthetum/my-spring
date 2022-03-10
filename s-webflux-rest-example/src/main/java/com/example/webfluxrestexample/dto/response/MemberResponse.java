@@ -11,10 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberResponse {
+    private Long id;
     private String name;
 
     public static MemberResponse fromEntity(Member member) {
         return MemberResponse.builder()
+                .id(member.getId())
                 .name(member.getName())
                 .build();
     }
