@@ -1,5 +1,6 @@
 package com.example.mvc.controller;
 
+import com.example.mvc.dto.request.AddAvatarRequest;
 import com.example.mvc.dto.request.CreateMemberRequest;
 import com.example.mvc.dto.request.EditMemberRequest;
 import com.example.mvc.dto.response.MemberResponse;
@@ -50,4 +51,19 @@ public class MemberController {
         memberService.deleteMember(id);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/avatar")
+    public ResponseEntity<MemberResponse> addAvatar(@Valid @RequestBody AddAvatarRequest request) {
+        return ResponseEntity.ok(memberService.addAvatar(request));
+    }
+
+    @DeleteMapping("/{id}/avatar")
+    public ResponseEntity<Void> removeAvatar(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "seq") int seq
+    ) {
+        memberService.removeAvatar(id, seq);
+        return ResponseEntity.ok().build();
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.example.mvc.service;
 
+import com.example.mvc.domain.Avatar;
 import com.example.mvc.domain.Member;
+import com.example.mvc.dto.request.AddAvatarRequest;
 import com.example.mvc.dto.request.CreateMemberRequest;
 import com.example.mvc.dto.request.EditMemberRequest;
 import com.example.mvc.dto.response.MemberResponse;
@@ -50,5 +52,20 @@ public class MemberService {
     @Transactional
     public void deleteMember(Long id) {
         memberRepository.deleteById(id);
+    }
+
+    @Transactional
+    public MemberResponse addAvatar(AddAvatarRequest request) {
+        Member member = memberRepository.findById(request.getId())
+                .orElseThrow(() -> new IllegalStateException());
+        Avatar.create(member, request.getSrc(), request.getSequence());
+        return MemberResponse.fromEntity(member);
+    }
+
+    @Transactional
+    public void removeAvatar(Long id, int seq) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException());
+        member.removeAvatar(seq);
     }
 }
