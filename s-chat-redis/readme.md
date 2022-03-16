@@ -1,0 +1,14 @@
+# Spring Chatting Application
+- Redis Pub/Sub 기반 채팅 애플리케이션
+---
+- 채팅방 생성/조회
+- 메시지 송수신
+---
+- Spring MVC
+- Spring Data JPA
+- STOMP, SockJS
+- Redis
+- MongoDB
+---
+- 메시지 전송은 Redis Pub/Sub을 통해 송수신
+- 메시지 기록은 MongoDB에 저장
