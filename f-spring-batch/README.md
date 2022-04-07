@@ -1,5 +1,9 @@
 # Spring Batch
 ## Overview
+<details>
+<summary>더보기</summary>
+<div markdown="1">
+
 ### 배치 프로그램
 - 정해진 시간에 일괄적으로 작업을 처리하는 프로그램 (대체로 대용량 데이터를 처리)
 - 서비스를 운영하는 관점에서 주기적으로 작업을 처리하기 위해 배치 프로그램 사용
@@ -25,7 +29,15 @@
 4. 쿠폰, 포인트 등이 만료되었을 때 소진시키는 처리를 할 때
 5. 월말 또는 월초에 특징 데이터를 생성할 때 (ex. 월별 거래 명세서)
 
-## Spring Batch 
+</div>
+</details>
+
+## Spring Batch 기본 및 구조 
+
+<details>
+<summary>더보기</summary>
+<div markdown="1">
+
 ### 기본 용어
 
 ![spring batch 도메인 언어](https://user-images.githubusercontent.com/59307414/153305364-3af076aa-ca0d-4922-869c-f278be2d2c86.png)
@@ -61,7 +73,7 @@
 - Step의 순서를 정의
 - JobParameters를 받음
 
-- Ex. 
+- Ex.
     ```java
     @Bean
     public Job footballJob() {
@@ -86,7 +98,7 @@
 > ![chuck](https://user-images.githubusercontent.com/59307414/153305687-0c7a3769-c505-4651-b9ad-a904099fa8c0.png)
 > - chunk 기반으로 하나의 트랜잭션에서 데이터를 처리
 > - commitInterval만큼 데이터를 읽고 트랜잭션 경계 내에서 chunkSize만큼 write 진행
->    - chunkSize : 한 트랙잭션에서 쓸 아이템의 갯수
+    >    - chunkSize : 한 트랙잭션에서 쓸 아이템의 갯수
 >    - commitInterval : reader가 한 번에 읽을 아이템의 갯수
 >    - chunkSize >= commitInterval 하지만 보통 같게 맞춰서 사용하는 것이 좋음
 
@@ -123,6 +135,182 @@ public Step sampleTaskletStep() {
 - Tasklet 구현체를 설정. 내부에 단순한 읽기, 쓰기, 처리 로직을 모두 넣음
 - RepeatStatus(반복상태)를 설정 (RepeatStatus.FINISHED)
 
+
+</div>
+</details>
+
+## Spring Batch 추가 적용
+
+<details>
+<summary>더보기</summary>
+<div markdown="1">
+
+### JobParameterValidator
+- 만약 추가 파라미터로 날짜를 입력해주는 경우
+```java
+@Slf4j
+@Configuration
+@AllArgsConstructor
+public class AdvancedJobConfig {
+
+    private final JobBuilderFactory jobBuilderFactory;
+    private final StepBuilderFactory stepBuilderFactory;
+
+    @Bean
+    public Job advancedJob(Step advancedStep) {
+        return jobBuilderFactory.get("advancedJob")
+                .incrementer(new RunIdIncrementer())
+                .start(advancedStep)
+                .build();
+    }
+
+    @JobScope
+    @Bean
+    public Step advancedStep(Tasklet advancedTasklet) {
+        return stepBuilderFactory.get("advancedStep")
+                .tasklet(advancedTasklet)
+                .build();
+    }
+
+    @StepScope
+    @Bean
+    public Tasklet advancedTasklet(@Value("#{jobParameters['targetDate']}") String targetDate) {
+        return ((contribution, chunkContext) -> {
+            LocalDate localDate = LocalDate.parse(targetDate);
+            log.info("LocalDate : " + localDate);
+            
+            // 만약 날짜 형식이 올바르지 않다면?
+            
+            return RepeatStatus.FINISHED;
+        });
+    }
+}
+```
+- 만약 `targetDate`로 받은 날짜 형식이 올바르지 않다면 step이 진행되는 상황에서 뒤늦게 exception이 발생
+- 따라서 작업이 시작하기 전에 미리 validation을 할 수 있다면 효율적일 것이다.
+- 이렇게 parameter에 대한 validation을 진행할 수 있는 게 `JobParameterValidator`
+
+```java
+# job/validator/LocalDateParameterValidator.java
+@AllArgsConstructor
+public class LocalDateParameterValidator implements JobParametersValidator {
+
+    private String parameterName;
+
+    @Override
+    public void validate(JobParameters parameters) throws JobParametersInvalidException {
+        String localDate = parameters.getString(parameterName);
+
+        if (!StringUtils.hasText(localDate)) {
+            throw new JobParametersInvalidException(parameterName + "가 빈 문자열이거나 존재하지 않습니다.");
+        }
+
+        try {
+            LocalDate.parse(localDate);
+        } catch (DateTimeParseException e) {
+            throw new JobParametersInvalidException(parameterName + "의 날짜 형식이 올바르지 않습니다.");
+        }
+    }
+}
+
+# job/AdvancedJobConfig.java
+public class AdvancedJobConfig {
+    ...
+
+    @Bean
+    public Job advancedJob(Step advancedStep) {
+        return jobBuilderFactory.get("advancedJob")
+                .incrementer(new RunIdIncrementer())
+                .validator(new LocalDateParameterValidator("targetDate"))
+                .start(advancedStep)
+                .build();
+    }
+}
+```
+- `validator` 설정을 통해 parameter에 대한 validation을 사전에 진행할 수 있다.
+
+### JobExecutionListener
+- 배치 작업의 상태에 따라 로직 처리가 필요한 경우
+    - ex. 배치 작업이 실패하는 경우 관리자에게 이메일이나 sms 알림을 제공해야 하는 경우
+- `JobExecutionListener`를 사용하자
+
+```java
+# job/AdvancedJobConfig.java
+public class AdvancedJobConfig {
+    
+    ...
+    
+    @Bean
+    public Job advancedJob(
+            JobExecutionListener jobExecutionListener,
+            Step advancedStep
+    ) {
+        return jobBuilderFactory.get("advancedJob")
+                .incrementer(new RunIdIncrementer())
+                .validator(new LocalDateParameterValidator("targetDate"))
+                .listener(jobExecutionListener)
+                .start(advancedStep)
+                .build();
+    }
+
+    @JobScope
+    @Bean
+    public JobExecutionListener jobExecutionListener() {
+        return new JobExecutionListener() {
+            @Override
+            public void beforeJob(JobExecution jobExecution) {
+                log.info("[JobExecutionListenerBeforeJob] JobExecution is " + jobExecution.getStatus());
+            }
+
+            @Override
+            public void afterJob(JobExecution jobExecution) {
+                if (jobExecution.getStatus() == BatchStatus.FAILED) {
+                    log.error("[JobExecutionListenerAfterJob] JobExecution is FAILED!!");
+                    // 배치 작업이 실패했을 때 로직을 처리할 수 있다. (ex. 이메일 전송)
+                }
+            }
+        };
+    }
+    
+    ...
+}
+```
+
+### StepExecutionListener
+- `JobExecutionListener`와 동일, step 단위로 확인 가능
+```java
+# job/AdvancedJobConfig.java
+
+@StepScope
+@Bean
+public StepExecutionListener stepExecutionListener() {
+    return new StepExecutionListener() {
+        @Override
+        public void beforeStep(StepExecution stepExecution) {
+            log.info("[StepExecutionListenerBeforeStep] StepExecution is " + stepExecution.getStatus());
+        }
+
+        @Override
+        public ExitStatus afterStep(StepExecution stepExecution) {
+            log.info("[StepExecutionListenerAfterStep] StepExecution is " + stepExecution.getStatus());
+            return stepExecution.getExitStatus();
+        }
+    }
+}
+```
+
+### FlatFileItemReader
+- 파일을 읽게 해주는 ItemReader
+- chunk 기반으로 아이템들을 읽을 수 있다
+- cf.
+    - https://docs.spring.io/spring-batch/docs/current/reference/html/index-single.html#flatFileItemReader
+    - https://sky-h-kim.tistory.com/38
+
+
+
+
+</div>
+</details>
 
 ### Reference
 - Spring batch docs : https://docs.spring.io/spring-batch/docs/current/reference/html/
