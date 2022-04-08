@@ -415,7 +415,7 @@ public FlatFileItemWriter<PlayerSalaryDto> playerFlatFileItemWriter() throws IOE
 
 - cf. https://docs.spring.io/spring-batch/docs/current/reference/html/index-single.html#multithreadedStep
 
-### Multi Thread Step
+### 1. Multi Threaded Step
 ```java
 # job/parallel/MuitiThreadStepJobConfig.java
 @JobScope
@@ -445,7 +445,79 @@ public TaskExecutor multiThreadStepTaskExecutor() {
 - 순서가 보장되지 않고 자원에 대해 락이 걸려있으면 성능이 향상되지 않을 수 있음
 - 자원 점유나 순서 보장과 관해서 자유로운 상황에서 성능을 개선해야 될 경우 사용 가능
 
+### 2. Parallel Steps
+- Step 여러 개를 동시에 실행
+    - `Multi Threaded Step`은 청크 단위로 작업
+- Step 자체를 하나의 스레드가 실행
 
+```java
+# job/parallel/ParallelStepJobConfig.java
+public class ParallelStepJobConfig {
+
+    private final JobBuilderFactory jobBuilderFactory;
+    private final StepBuilderFactory stepBuilderFactory;
+
+    @Bean
+    public Job parallelJob(Flow splitFlow) {
+        return jobBuilderFactory.get("parallelJob")
+                .incrementer(new RunIdIncrementer())
+                .start(splitFlow)
+                .build()
+                .build();
+    }
+
+    @Bean
+    public Flow splitFlow(
+            TaskExecutor multiThreadStepTaskExecutor,
+            Flow flowAmountFileStep,
+            Flow flowAnotherStep
+    ) {
+        return new FlowBuilder<SimpleFlow>("splitFlow")
+                .split(multiThreadStepTaskExecutor)
+                .add(flowAmountFileStep, flowAnotherStep)
+                .build();
+    }
+
+    @Bean
+    public Flow flowAmountFileStep(Step amountFileStep) {
+        return new FlowBuilder<SimpleFlow>("flowAmountFileStep")
+                .start(amountFileStep)
+                .end();
+    }
+
+    @Bean
+    public Step amountFileStep(
+            FlatFileItemReader<AmountDto> amountFileItemReader,
+            ItemProcessor<AmountDto, AmountDto> amountFileItemProcessor,
+            FlatFileItemWriter<AmountDto> amountFileItemWriter
+    ) {
+        return stepBuilderFactory.get("multiThreadStep")
+                .<AmountDto, AmountDto>chunk(10)
+                .reader(amountFileItemReader)
+                .processor(amountFileItemProcessor)
+                .writer(amountFileItemWriter)
+                .build();
+    }
+
+    @Bean
+    public Flow flowAnotherStep(Step anotherStep) {
+        return new FlowBuilder<SimpleFlow>("anotherStep")
+                .start(anotherStep)
+                .end();
+    }
+
+    @Bean
+    public Step anotherStep() {
+        return stepBuilderFactory.get("anotherStep")
+                .tasklet(((contribution, chunkContext) -> {
+                    Thread.sleep(500);
+                    System.out.println("Another Step Completed. Thread = " + Thread.currentThread().getName());
+                    return RepeatStatus.FINISHED;
+                }))
+                .build();
+    }
+}
+```
 
 </div>
 </details>
