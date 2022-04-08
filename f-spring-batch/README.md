@@ -398,6 +398,54 @@ public FlatFileItemWriter<PlayerSalaryDto> playerFlatFileItemWriter() throws IOE
 }
 ```
 
+</div>
+</details>
+
+## Spring Batch 병렬 처리
+
+<details>
+<summary>더보기</summary>
+<div markdown="1">
+
+### Spring Batch에서 병렬 처리를 하는 방법 4가지
+1. Multi-threaded Step (single process)
+2. Parallel Steps (single process)
+3. Remote Chunking of Step (multi process)
+4. Partitioning a Step (single or multi process)
+
+- cf. https://docs.spring.io/spring-batch/docs/current/reference/html/index-single.html#multithreadedStep
+
+### Multi Thread Step
+```java
+# job/parallel/MuitiThreadStepJobConfig.java
+@JobScope
+@Bean
+public Step multiThreadStep(
+        FlatFileItemReader<AmountDto> amountFileItemReader,
+        ItemProcessor<AmountDto, AmountDto> amountFileItemProcessor,
+        FlatFileItemWriter<AmountDto> amountFileItemWriter,
+        TaskExecutor multiThreadStepTaskExecutor
+) {
+    return stepBuilderFactory.get("multiThreadStep")
+            .<AmountDto, AmountDto>chunk(10)
+            .reader(amountFileItemReader)
+            .processor(amountFileItemProcessor)
+            .writer(amountFileItemWriter)
+            .taskExecutor(multiThreadStepTaskExecutor)
+            .build();
+}
+
+@Bean
+public TaskExecutor multiThreadStepTaskExecutor() {
+    SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor("spring-batch-task-executor");
+    return taskExecutor;
+}
+```
+- `TaskExecutor`를 이용해서 멀티 스레드 작업을 진행
+- 순서가 보장되지 않고 자원에 대해 락이 걸려있으면 성능이 향상되지 않을 수 있음
+- 자원 점유나 순서 보장과 관해서 자유로운 상황에서 성능을 개선해야 될 경우 사용 가능
+
+
 
 </div>
 </details>
