@@ -1,5 +1,25 @@
 # 스프링으로 이것저것 해보기
 
+<img src="https://img.shields.io/badge/-Srping Boot-6db33f?&logo=Spring Boot&logoColor=white&style=for-the-badge">
+<img src="https://img.shields.io/badge/-Spring MVC-6DB33F?&logo=Spring&logoColor=white&style=for-the-badge"> 
+<img src="https://img.shields.io/badge/-Spring WebFlux-6DB33F?&logo=Spring&logoColor=white&style=for-the-badge"> 
+
+<img src="https://img.shields.io/badge/-Spring Security-6DB33F?&logo=SpringSecurity&logoColor=white&style=for-the-badge"> 
+<img src="https://img.shields.io/badge/-Spring Batch-6DB33F?&logo=Spring&logoColor=white&style=for-the-badge"> 
+<img src="https://img.shields.io/badge/-Spring Integration-6DB33F?&logo=Spring&logoColor=white&style=for-the-badge">
+<img src="https://img.shields.io/badge/-Spring REST DOCS-6DB33F?&logo=Spring&logoColor=white&style=for-the-badge">
+
+<img src="https://img.shields.io/static/v1?style=for-the-badge&message=Hibernate&color=59666C&logo=Hibernate&logoColor=FFFFFF&label=">
+<img src="https://img.shields.io/badge/-MySQL-003545?&logo=MySQL&logoColor=white&style=for-the-badge">
+<img src="https://img.shields.io/badge/-MongoDB-569A31?&logo=MongoDB&logoColor=white&style=for-the-badge">
+<img src="https://img.shields.io/badge/-Redis-DF0000?&logo=Redis&Color=white&logoColor=white&style=for-the-badge">
+
+<img src="https://img.shields.io/badge/-WebSocket-010101?&logoColor=white&style=for-the-badge">
+<img src="https://img.shields.io/badge/-SockJS-010101?&logoColor=white&style=for-the-badge">
+<img src="https://img.shields.io/badge/-Stomp-010101?&logoColor=white&style=for-the-badge">
+
+<img src="https://img.shields.io/static/v1?style=for-the-badge&message=JSON+Web+Tokens&color=000000&logo=JSON+Web+Tokens&logoColor=FFFFFF&label=">
+
 ## dmaker
 - Spring MVC 기반 REST API 개발 및 예외 처리 공부
 

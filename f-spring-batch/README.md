@@ -299,14 +299,104 @@ public StepExecutionListener stepExecutionListener() {
 }
 ```
 
-### FlatFileItemReader
-- 파일을 읽게 해주는 ItemReader
-- chunk 기반으로 아이템들을 읽을 수 있다
-- cf.
-    - https://docs.spring.io/spring-batch/docs/current/reference/html/index-single.html#flatFileItemReader
-    - https://sky-h-kim.tistory.com/38
+### FlatFileItemReader, ItemProcessAdapter, FlatFileItemWriter
+- `FlatFileItemReader` : 파일을 읽게 해주는 ItemReader
+    - chunk 기반으로 아이템들을 읽을 수 있다
+    - cf.
+        - https://docs.spring.io/spring-batch/docs/current/reference/html/index-single.html#flatFileItemReader
+        - https://sky-h-kim.tistory.com/38
 
+- `ItemProcessAdapter`
+    - `Example 1` 처럼 바로 ItemProcessor를 적용할 수도 있고, `Example 2`처럼 별도의 Adapter를 만들어서 적용할 수도 있다.
+    - Adapter를 사용하는 경우 조금 더 코드가 간단해진다.
 
+```java
+# Example 1
+@JobScope
+@Bean
+public Step flatFileStep(
+        FlatFileItemReader<PlayerDto> playerFlatFileItemReader,
+        ItemProcessor<PlayerDto, PlayerSalaryDto> playerSalaryItemProcessor
+    ) {
+        return stepBuilderFactory.get("flatFileStep")
+            .<PlayerDto, PlayerSalaryDto>chunk(5)
+            .reader(playerFlatFileItemReader)
+            .processor(playerSalaryItemProcessor)
+            .writer(new ItemWriter<>() {
+                @Override
+                public void write(List<? extends PlayerSalaryDto> items) throws Exception {
+                    items.forEach(System.out::println);
+                }
+            })
+            .build();
+}
+
+@StepScope
+@Bean
+public ItemProcessor<PlayerDto, PlayerSalaryDto> playerSalaryItemProcessor(PlayerSalaryService playerSalaryService) {
+    return new ItemProcessor<PlayerDto, PlayerSalaryDto>() {
+        @Override
+        public PlayerSalaryDto process(PlayerDto item) throws Exception {
+            return playerSalaryService.calSalary(item);
+        }
+    };
+}
+
+# Example 2
+@JobScope
+@Bean
+public Step flatFileStep(
+        FlatFileItemReader<PlayerDto> playerFlatFileItemReader,
+        ItemProcessorAdapter<PlayerDto, PlayerSalaryDto> playerSalaryItemProcessorAdapter
+    ) {
+        return stepBuilderFactory.get("flatFileStep")
+            .<PlayerDto, PlayerSalaryDto>chunk(5)
+            .reader(playerFlatFileItemReader)
+            .processor(playerSalaryItemProcessorAdapter)
+            .writer(new ItemWriter<>() {
+                @Override
+                public void write(List<? extends PlayerSalaryDto> items) throws Exception {
+                    items.forEach(System.out::println);
+                }
+            })
+            .build();
+}
+
+@StepScope
+@Bean
+public ItemProcessorAdapter<PlayerDto, PlayerSalaryDto> playerSalaryItemProcessorAdapter(PlayerSalaryService playerSalaryService) {
+        ItemProcessorAdapter<PlayerDto, PlayerSalaryDto> adapter = new ItemProcessorAdapter<>();
+        adapter.setTargetObject(playerSalaryService);
+        adapter.setTargetMethod("calSalary");
+        return adapter;
+}
+```
+
+- `FlatFileItemWriter`
+
+```java
+@StepScope
+@Bean
+public FlatFileItemWriter<PlayerSalaryDto> playerFlatFileItemWriter() throws IOException {
+    BeanWrapperFieldExtractor<PlayerSalaryDto> fieldExtractor = new BeanWrapperFieldExtractor<>();
+    fieldExtractor.setNames(new String[]{"ID", "firstName", "lastName", "salary"});
+    fieldExtractor.afterPropertiesSet();
+
+    DelimitedLineAggregator<PlayerSalaryDto> lineAggregator = new DelimitedLineAggregator<>();
+    lineAggregator.setDelimiter("\t");
+    lineAggregator.setFieldExtractor(fieldExtractor);
+
+    // 기존 파일 덮어쓰기
+    new File("src/main/resources/sample/player-salary.txt").createNewFile();
+    FileSystemResource resource = new FileSystemResource("src/main/resources/sample/player-salary.txt");
+
+    return new FlatFileItemWriterBuilder<PlayerSalaryDto>()
+            .name("playerFlatFileItemWriter")
+            .resource(resource)
+            .lineAggregator(lineAggregator)
+            .build();
+}
+```
 
 
 </div>

@@ -78,7 +78,7 @@ public class AdvancedJobConfig {
                 log.info("[StepExecutionListenerAfterStep] StepExecution is " + stepExecution.getStatus());
                 return stepExecution.getExitStatus();
             }
-        }
+        };
     }
 
     @StepScope
