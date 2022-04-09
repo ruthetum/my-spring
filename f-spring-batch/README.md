@@ -411,7 +411,7 @@ public FlatFileItemWriter<PlayerSalaryDto> playerFlatFileItemWriter() throws IOE
 1. Multi-threaded Step (single process)
 2. Parallel Steps (single process)
 3. Remote Chunking of Step (multi process)
-4. Partitioning a Step (single or multi process)
+4. Partitioning (single or multi process)
 
 - cf. https://docs.spring.io/spring-batch/docs/current/reference/html/index-single.html#multithreadedStep
 
@@ -518,6 +518,18 @@ public class ParallelStepJobConfig {
     }
 }
 ```
+
+### 3. Remote Chunking of Step
+![remote chunking](https://docs.spring.io/spring-batch/docs/current/reference/html/images/remote-chunking.png)
+- step을 다수의 process로 나누어서 작업
+- worker에 channel을 통해 전달
+
+### 4. Partitioning
+![partitioning](https://docs.spring.io/spring-batch/docs/current/reference/html/images/partitioning-overview.png)
+- 단일 또는 멀티 프로세스에서 실행 가능
+- manager 스텝에서 만든 파티션 단위로 작업 실행
+
+
 
 </div>
 </details>
