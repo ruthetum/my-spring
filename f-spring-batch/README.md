@@ -529,7 +529,83 @@ public class ParallelStepJobConfig {
 - 단일 또는 멀티 프로세스에서 실행 가능
 - manager 스텝에서 만든 파티션 단위로 작업 실행
 
+</div>
+</details>
 
+## Spring Batch 테스트
+
+<details>
+<summary>더보기</summary>
+<div markdown="1">
+
+### Mock 활용해서 서비스 테스트 코드 작성하기
+
+```java
+# test/java/com/example/springbatch/core/service/PlayerSalaryServiceTest.java
+public class PlayerSalaryServiceTest {
+
+    private PlayerSalaryService playerSalaryService;
+
+    @BeforeEach
+    public void setup() {
+        playerSalaryService = new PlayerSalaryService();
+    }
+
+    @Test
+    public void calSalary() {
+        // given
+        Year mockYear = mock(Year.class);
+        when(mockYear.getValue()).thenReturn(2022);
+        mockStatic(Year.class).when(Year::now).thenReturn(mockYear);
+
+        PlayerDto mockPlayer = mock(PlayerDto.class);
+        when(mockPlayer.getBirthYear()).thenReturn(1980);
+
+        // when
+        PlayerSalaryDto result = playerSalaryService.calSalary(mockPlayer);
+
+        // then
+        Assertions.assertEquals(result.getSalary(), 4200000);
+    }
+}
+```
+
+- Mock을 활용하기 위해 dependency 추가
+    - `testImplementation 'org.mockito:mockito-inline:3.8.0'`
+- mock, mockStatic을 활용해서 서비스 로직 테스트
+
+### `AssertFile`로 파일 테스트하기
+
+```java
+# test/java/com/example/springbatch/job/FlatFileJobConfigTest.java
+@SpringBootTest
+@SpringBatchTest
+@ExtendWith(SpringExtension.class)
+@ActiveProfiles("test")
+@ContextConfiguration(classes = {FlatFileJobConfig.class, BatchTestConfig.class, PlayerSalaryService.class})
+public class FlatFileJobConfigTest {
+
+    @Autowired
+    private JobLauncherTestUtils jobLauncherTestUtils;
+
+    @Test
+    public void success() throws Exception {
+        // given
+
+        // when
+        JobExecution execution = jobLauncherTestUtils.launchJob();
+
+        // then
+        Assertions.assertEquals(execution.getExitStatus(), ExitStatus.COMPLETED);
+        AssertFile.assertFileEquals(
+                new FileSystemResource("src/main/resources/sample/player-salary.txt").getFile(),
+                new FileSystemResource("src/main/resources/sample/succeed-player-salary.txt").getFile()
+        );
+    }
+}
+```
+
+- `AssertFile.assertFileEquals`를 통해 파일을 비교할 수 있다.
 
 </div>
 </details>
