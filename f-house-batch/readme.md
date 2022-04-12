@@ -31,10 +31,10 @@
 #### 데이터 저장
 > 법정동 파일을 DB 테이블에 저장한다.
 
+---
+
 </div>
 </details>
-
----
 
 ### 2. 실거래가 수집 배치 설계
 
@@ -57,10 +57,10 @@
 #### Writer
 > 새롭게 생성된 실거래가 정보만 데이터 베이스에 upsert
 
+---
+
 </div>
 </details>
-
----
    
 ### 3. 실거래가 알림 배치
 
@@ -83,10 +83,10 @@
 #### Writer
 > 전송 인터페이스 구현
 
+---
+
 </div>
 </details>
-
----
 
 ## Job 개발
 ### 1. 동 코드 마이그레이션
@@ -96,21 +96,21 @@
 <div markdown="1">
 
 #### 법정동코드 자료 분석
-- <a href="src/main/resources/data/LAWD_CODE.txt"> 법정동코드 전체잔료 텍스트 파일</a>
+- <a href="src/main/resources/data/LAWD_CODE.txt"> 법정동코드 전체 자료 텍스트 파일</a>
     - https://www.code.go.kr/index.do 다운로드 가능
 
 #### TODO
 - [x] 법정동 - lawd 엔티티, 래포지터리 생성
-- [ ] 법정동 관련 비즈니스 로직 서비스 구현
-- [ ] 잡 - 스텝 생성
-    - [ ] Reader : FlatFileReader - FieldSetMapper 사용
-    - [ ] Processor : -
-    - [ ] Writer : upsert 구현
+- [x] 법정동 관련 비즈니스 로직 서비스 구현
+- [x] 잡 - 스텝 생성
+    - [x] Reader : FlatFileReader - FieldSetMapper 사용
+    - [x] Processor : -
+    - [x] Writer : upsert 구현
+  
+---
 
 </div>
 </details>
-
----
 
 ### 2. 실거래가 수집 배치 설계
 
@@ -119,10 +119,10 @@
 <div markdown="1">
 
 
+---
+
 </div>
 </details>
-
----
 
 ### 3. 실거래가 알림 배치
 
@@ -130,8 +130,7 @@
 <summary>Deatil</summary>
 <div markdown="1">
 
+---
 
 </div>
 </details>
-
----

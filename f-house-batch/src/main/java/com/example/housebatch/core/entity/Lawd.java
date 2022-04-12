@@ -4,6 +4,7 @@ import lombok.*;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "lawd")
 @Getter
 @Setter
 @ToString
@@ -12,6 +13,7 @@ public class Lawd extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "lawd_id")
     private Long id;
 
     @Column(nullable = false)
@@ -29,5 +31,11 @@ public class Lawd extends BaseTimeEntity {
         lawd.setLawdDong(lawdDong);
         lawd.setExist(exist);
         return lawd;
+    }
+
+    public void update(String lawdCd, String lawdDong, Boolean exist) {
+        this.lawdCd = lawdCd;
+        this.lawdDong = lawdDong;
+        this.exist = exist;
     }
 }
