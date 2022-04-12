@@ -6,6 +6,10 @@
 ## dmaker
 - Spring MVC 기반 REST API 개발 및 예외 처리 공부
 
+## house-batch
+- [호갱노노](https://hogangnono.com/) 배치 시스템 만들기 with Spring Batch
+- [국토교통부 아파트매매 실거래자료](https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15058747) 활용
+
 ## rest-docs
 - Spring REST Docs 적용해보기
 
