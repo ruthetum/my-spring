@@ -20,8 +20,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import java.util.List;
-
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -35,6 +33,7 @@ public class LawdInsertJobConfig {
     private static final String LAWD_INSERT_JOB = "lawdInsertJob";
     private static final String LAWD_INSERT_STEP = "lawdInsertStep";
     private static final String LAWD_FLAT_FILE_ITEM_READER = "lawdFlatFileItemReader";
+    private static final int CHUNK_SIZE = 1000;
     private static final String DELIMITER = "\t";
 
     @Bean
@@ -53,7 +52,7 @@ public class LawdInsertJobConfig {
             ItemWriter<Lawd> lawdItemWriter
     ) {
         return stepBuilderFactory.get(LAWD_INSERT_STEP)
-                .<Lawd, Lawd>chunk(1000)
+                .<Lawd, Lawd>chunk(CHUNK_SIZE)
                 .reader(lawdFlatFileItemReader)
                 .writer(lawdItemWriter)
                 .build();
