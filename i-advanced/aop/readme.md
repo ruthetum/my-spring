@@ -418,6 +418,18 @@ public class AspectV6Advice {
 - `@Around`는 `ProceedingJoinPoint`를 사용
 - `proceed()`: 다음 어드바이스나 타켓을 호출
 
+
+## @Around 외에 다른 어드바이스가 존재하는 이유
+- @Around 는 항상 joinPoint.proceed() 를 호출해야 함
+- 만약 실수로 호출하지 않으면 타켓이 호출되지 않는 치명적인 버그 발생
+  - @Before 는 joinPoint.proceed() 를 호출하는 고민을 하지 않아도 됨
+  - @Around 가 가장 넓은 기능을 제공하는 것은 맞지만, 실수할 가능성이 있음
+  - 반면 @Before , @After 같은 어드바이스는 기능은 적지만 실수할 가능성이 낮고, 코드도 단순
+
+<br>
+---
+<br>
+
 ## Filter vs Interceptor vs AOP
 ![image](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Fcfile%2Ftistory%2F9983FB455BB4E5D30C)
 - Interceptor와 Filter는 Servlet 단위에서 실행
