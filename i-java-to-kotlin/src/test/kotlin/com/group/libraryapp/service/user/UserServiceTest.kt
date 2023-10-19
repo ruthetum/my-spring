@@ -66,7 +66,6 @@ class UserServiceTest @Autowired constructor(
     fun deleteUserTest() {
         // given.
         val user = userRepository.save(User("a", 25))
-        val request = UserUpdateRequest(user.id!!, null)
 
         // when.
         userService.deleteUser("a")

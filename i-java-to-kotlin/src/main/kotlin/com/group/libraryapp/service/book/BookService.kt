@@ -26,7 +26,7 @@ class BookService(
     @Transactional
     fun loanBook(request: BookLoanRequest) {
         val book = bookRepository.findByName(request.bookName) ?: fail("존재하지 않는 책입니다")
-        if (userLoanHistoryRepository.findByBookNameAndIsReturn(request.getBookName(), false) != null) {
+        if (userLoanHistoryRepository.findByBookNameAndIsReturn(request.bookName, false) != null) {
             fail("진작 대출되어 있는 책입니다");
         }
 
